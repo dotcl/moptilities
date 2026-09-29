@@ -201,9 +201,9 @@ class-slot-names but on the class, not an instance of the class.")
            (finalize-class-if-necessary class)
            (mapcar #'slot-definition-name (class-slots class)))
   (:method ((class symbol))
-           ;; on sbcl a defstruct creates a structure-class that can be
+           ;; on sbcl and dotcl a defstruct creates a structure-class that can be
            ;; find-class'ed and mostly behaves as normal classes.
-           (cond #-sbcl((get-structure class nil)
+           (cond #-(or sbcl dotcl)((get-structure class nil)
                         #+(or DIGITOOL OPENMCL)
                         (mapcar #'first (rest (aref (get-structure class nil) 1)))
                         #-(or DIGITOOL OPENMCL)
@@ -481,7 +481,9 @@ description.  Otherwise signal an error if errorp is t."
    (fdefinition symbol))
   #+cmu 
   (cmu-arglist symbol) 
-  #-(or digitool openmcl lispworks allegro sbcl cmu)
+  #+dotcl
+  (dotcl:function-lambda-list (fdefinition symbol))
+  #-(or digitool openmcl lispworks allegro sbcl cmu dotcl)
   (nyi "function-arglist"))
 
 #+cmu
